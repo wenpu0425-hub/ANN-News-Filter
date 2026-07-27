@@ -1,0 +1,8 @@
+bs4
+datetime
+requests
+textwrap
+json
+openai
+os
+
