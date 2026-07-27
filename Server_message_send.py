@@ -22,7 +22,7 @@ for i in range (len(summary_list)):
 summary_split = summary.split("\n\n")
 interval = 5
 for i in range (0 , len(summary_split) , interval):
-    url = os.getenv("Server_Key")
+    url = os.getenv("SERVER_KEY")
     summary_prosseing = summary_split[i : i+ interval]
     summary_final = "\n\n".join(summary_prosseing)
     params = {
