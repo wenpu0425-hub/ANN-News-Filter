@@ -4,10 +4,10 @@ from openai import OpenAI
 
 with open('ANN_news_data.json', 'r', encoding='utf-8') as myFile:
     news_list = json.load(myFile)
-print("successfully loaded", {len(news_list)}, "条新闻")
+print("successfully loaded", {len(news_list)}, "pieces of news")
 
 client = OpenAI(
-    api_key= os.getenv("Deepseek_API_Key"),
+    api_key= os.getenv("DEEPSEEK_API_KEY"),
     base_url="https://api.deepseek.com"
 )
 
