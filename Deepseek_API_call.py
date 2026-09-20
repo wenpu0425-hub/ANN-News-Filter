@@ -24,13 +24,12 @@ for i in range (len(news_list)):
     ]
 
     response = client.chat.completions.create(
-        model = "deepseek-flash"
-        messages = messages
-        stream = False
-        reasoning_effort="low"
-        extra_body={"thinking": {"type": "enabled"}}
+        model = "deepseek-flash",
+        messages = messages,
+        stream = False,
+        reasoning_effort="low",
+        extra_body={"thinking": {"type": "enabled"}},
         response_format={"type": "json_object"}
-        temperature = 0.3
     )
     print(response.choices[0].message.content)
     API_json.append(response.choices[0].message.content)
