@@ -3,6 +3,7 @@ from datetime import date,timedelta
 import requests
 import textwrap
 import json
+import sys
 
 def fetch_link_and_time():
     dict = {}
@@ -11,13 +12,23 @@ def fetch_link_and_time():
     head = {"User-Agent": "Mozilla/5.0"}
     response = requests.get("https://www.animenewsnetwork.com/",headers=head)
     if response.status_code >= 300:
-        print("connection of article fetching failed, status_code:", response.status_code)
+        print("ANN requests failed, status code:", response.status_code)
+        try:
+            check_IP = requests.get("http://ip-api.com/json/?fields=query,country,isp,hosting",timeout=10)
+            data_IP = check_IP.json()
+            if data_IP["country"] == "China":
+                print("failure is caused by visit from restricted area probably")
+            if data_IP["hosting"] == True:
+                print("failure is caused by using data center IP probably")
+        except Exception as e:
+            print("ip check failed:", e)
+        sys.exit("Program exits")
     elif 200 <= response.status_code < 300:
         content = response.text
         print("connection of article fetching succeeded, status_code:", response.status_code)
 
         soup = BeautifulSoup(content, "html.parser")
-        all_link_wraps = soup.find_all("div", class_="wrap") #寻找链接填充lst_link
+        all_link_wraps = soup.find_all("div", class_="wrap") 
         for link_wrap in all_link_wraps:
             a_tag = link_wrap.find("a")
             if a_tag.get("href"):
@@ -48,6 +59,7 @@ def fetch_news_article(link):
     response = requests.get(link,headers=head)
     if response.status_code >= 300:
         print("connection of article fetching failed, status_code:", response.status_code)
+        return []
     elif 200 <= response.status_code < 300:
         content = response.text
         soup = BeautifulSoup(content,"html.parser")
@@ -79,10 +91,16 @@ if __name__ == "__main__":
             article_date = date.fromisoformat(lst_time[i])
             if three_days_ago <= article_date <= today:
                 headline_and_article = fetch_news_article(lst_link[i])
+                if len(headline_and_article) < 2:
+                    print("article content missing, skip:", lst_link[i])
+                    continue
                 my_dict = {"URL": lst_link[i], "Date": lst_time[i], "Title": headline_and_article[1], "Content": headline_and_article[0]}
                 my_json.append(my_dict)
 
     with open('ANN_news_data.json', 'w', encoding='utf-8') as myFile:
         json.dump( my_json , myFile, ensure_ascii = False, indent=2)
 
-    print("successfully install", {len(my_json)} ,"pieces of news to ANN_news_data.json")
+    if len(my_json) < 1:
+        sys.exit("program failed caused by empty json file")
+    else:
+        print("install", len(my_json) ,"pieces of news to ANN_news_data.json")
